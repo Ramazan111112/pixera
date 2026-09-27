@@ -1,0 +1,823 @@
+<title>PIXERA</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#FAFAF6;
+    --bg-raised:#F0EEE3;
+    --text:#17160F;
+    --text-muted:#6B6A5C;
+    --line:#DEDCCC;
+    --accent:#5E7A38;
+    --frame:#FFFFFF;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#131309;
+      --bg-raised:#1B1B10;
+      --text:#F1EFE3;
+      --text-muted:#9C9A86;
+      --line:#2E2D1D;
+      --accent:#93BC5C;
+      --frame:#1B1B10;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#131309;
+    --bg-raised:#1B1B10;
+    --text:#F1EFE3;
+    --text-muted:#9C9A86;
+    --line:#2E2D1D;
+    --accent:#93BC5C;
+    --frame:#1B1B10;
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+  }
+  ::selection{ background:var(--accent); color:var(--frame); }
+
+  h1,h2{ font-family:'Archivo', system-ui, sans-serif; font-weight:800; text-wrap:balance; margin:0; }
+  p{ margin:0 0 1.05em; }
+  p:last-child{ margin-bottom:0; }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.76rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    margin-bottom:14px;
+  }
+
+  .body-text{
+    font-size:1.03rem;
+    line-height:1.68;
+    max-width:60ch;
+    color:var(--text);
+  }
+
+  /* ---------- chrome: running head, dot nav, counter ---------- */
+  .chrome{ position:fixed; inset:0; pointer-events:none; z-index:20; }
+  .chrome > *{ pointer-events:auto; }
+
+  .runninghead{
+    position:fixed;
+    top:calc(env(safe-area-inset-top,0px) + 22px);
+    left:clamp(20px,6vw,64px);
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.76rem;
+    letter-spacing:.14em;
+    color:var(--text-muted);
+  }
+
+  .counter{
+    position:fixed;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+    left:clamp(20px,6vw,64px);
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.76rem;
+    letter-spacing:.06em;
+    color:var(--text-muted);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .dotnav{
+    position:fixed;
+    right:clamp(14px,4vw,28px);
+    top:50%;
+    transform:translateY(-50%);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .dotnav button{
+    width:9px; height:9px; padding:0; margin:0;
+    border-radius:50%;
+    border:1px solid var(--text-muted);
+    background:transparent;
+    cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .dotnav button[aria-current="true"]{
+    background:var(--accent);
+    border-color:var(--accent);
+    transform:scale(1.25);
+  }
+  .dotnav button:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+  @media (max-width:640px){ .dotnav{ display:none; } }
+
+  /* ---------- deck ---------- */
+  .deck{
+    height:100dvh;
+    overflow-y:auto;
+    scroll-snap-type:y proximity;
+    scrollbar-width:thin;
+  }
+  .slide{
+    min-height:100dvh;
+    display:flex;
+    align-items:center;
+    scroll-snap-align:start;
+    border-bottom:1px solid var(--line);
+    padding:clamp(88px,12vh,120px) clamp(20px,8vw,96px) clamp(64px,8vh,96px);
+  }
+  .slide:last-child{ border-bottom:none; }
+
+  .slide-inner{
+    max-width:1120px;
+    width:100%;
+    margin:0 auto;
+  }
+
+  .split{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(220px,320px);
+    gap:clamp(28px,5vw,64px);
+    align-items:start;
+  }
+  @media (max-width:800px){
+    .split{ grid-template-columns:1fr; }
+  }
+
+  .frame{
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    background:var(--frame);
+    line-height:0;
+  }
+  .frame img, .frame video{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+  figcaption{
+    margin-top:12px;
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.78rem;
+    color:var(--text-muted);
+    max-width:46ch;
+  }
+  figure{ margin:0; }
+
+  .center-figure{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+  .center-figure .frame{ max-width:280px; width:100%; }
+  .center-figure figcaption{ max-width:52ch; }
+
+  .stack-line{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.86rem;
+    line-height:1.6;
+    color:var(--text-muted);
+    max-width:60ch;
+    padding-top:18px;
+    margin-top:18px;
+    border-top:1px solid var(--line);
+  }
+  .stack-line b{ color:var(--text); font-weight:500; }
+
+  .aside-note{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    max-width:62ch;
+    margin-top:26px;
+    padding-top:22px;
+    border-top:1px solid var(--line);
+  }
+  .aside-note__tag{
+    flex:none;
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.7rem;
+    font-weight:500;
+    letter-spacing:.08em;
+    color:var(--accent);
+    border:1px solid var(--accent);
+    border-radius:4px;
+    padding:3px 8px;
+    margin-top:3px;
+  }
+  .aside-note p{
+    font-size:.94rem;
+    line-height:1.62;
+    color:var(--text-muted);
+    margin:0;
+  }
+
+  /* ---------- cover ---------- */
+  .cover .slide-inner{
+    display:grid;
+    grid-template-columns:minmax(0,1.1fr) minmax(200px,280px);
+    gap:clamp(28px,6vw,72px);
+    align-items:center;
+  }
+  @media (max-width:800px){
+    .cover .slide-inner{ grid-template-columns:1fr; }
+  }
+  .cover h1{
+    font-size:clamp(3.2rem,10vw,6.4rem);
+    line-height:.94;
+    letter-spacing:-.02em;
+    margin-bottom:18px;
+  }
+  .cover .sub{
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    font-weight:500;
+    font-size:clamp(1.05rem,2.2vw,1.3rem);
+    margin-bottom:22px;
+    color:var(--text);
+  }
+  .accent-rule{
+    width:44px; height:3px; background:var(--accent);
+    margin-bottom:20px;
+  }
+  .cover-meta{
+    margin-top:34px;
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.76rem;
+    color:var(--text-muted);
+    line-height:1.8;
+  }
+  .cover .frame{ align-self:center; }
+
+  .next-hint{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:38px; height:38px;
+    border:1px solid var(--line);
+    border-radius:50%;
+    background:transparent;
+    cursor:pointer;
+    margin-top:40px;
+    color:var(--text-muted);
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .next-hint:hover{ border-color:var(--accent); color:var(--accent); }
+  .next-hint:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+  .next-hint svg{ width:16px; height:16px; }
+
+  /* ---------- diagrams ---------- */
+  .diagram-figure{ margin:0; width:100%; }
+  .diagram-figure svg{ width:100%; height:auto; display:block; overflow:visible; }
+  .diagram{ font-family:'IBM Plex Mono', ui-monospace, monospace; }
+  .diagram .node{ fill:none; stroke:currentColor; stroke-width:1.2; }
+  .diagram .node-accent{ stroke:var(--accent); stroke-width:1.6; }
+  .diagram .node-title{ font-weight:500; fill:currentColor; }
+  .diagram .node-title-accent{ font-weight:500; fill:var(--accent); }
+  .diagram .node-sub{ fill:var(--text-muted); }
+  .diagram .edge{ stroke:currentColor; stroke-width:1.1; fill:none; }
+  .diagram .edge-accent{ stroke:var(--accent); }
+  .diagram .edge-muted{ stroke:var(--text-muted); stroke-dasharray:4 3; }
+  .diagram .edge-label{ fill:var(--text-muted); }
+  .diagram .edge-label-accent{ fill:var(--accent); }
+  .diagram .arrowhead{ fill:currentColor; }
+  .diagram .arrowhead-accent{ fill:var(--accent); }
+  .diagram .arrowhead-muted{ fill:var(--text-muted); }
+  .diagram .chip{ fill:none; stroke:currentColor; stroke-width:1; }
+  .diagram .chip-text{ fill:currentColor; }
+  figure.diagram-figure figcaption{ margin-top:16px; }
+
+  .spec-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:18px;
+    margin-top:8px;
+  }
+  @media (max-width:760px){ .spec-grid{ grid-template-columns:1fr; } }
+  .spec-card{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 20px;
+  }
+  .spec-card__name{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-weight:500;
+    font-size:.98rem;
+    margin-bottom:6px;
+  }
+  .spec-card__desc{
+    font-size:.88rem;
+    color:var(--text-muted);
+    line-height:1.5;
+    margin-bottom:12px;
+  }
+  .spec-card__fields{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.78rem;
+    line-height:1.9;
+    color:var(--text);
+    border-top:1px solid var(--line);
+    padding-top:10px;
+  }
+  .spec-card__fields span{ color:var(--text-muted); }
+  .spec-note{
+    margin-top:14px;
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.78rem;
+    color:var(--accent);
+  }
+
+  /* ---------- contact ---------- */
+  .copyrow{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:6px;
+  }
+  .email{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:1.05rem;
+  }
+  .copybtn{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.76rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    background:transparent;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:6px 12px;
+    color:var(--text);
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .copybtn:hover{ border-color:var(--accent); color:var(--accent); }
+  .copybtn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .contact-block + .contact-block{ margin-top:26px; }
+  .contact-label{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    margin-bottom:8px;
+  }
+
+  video{ background:#000; }
+</style>
+
+<div class="chrome">
+  <div class="runninghead">PIXERA</div>
+  <div class="counter" id="counter">01 / 08</div>
+  <nav class="dotnav" id="dotnav" aria-label="Навигация по слайдам"></nav>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- 0 · COVER -->
+  <section class="slide cover">
+    <div class="slide-inner">
+      <div>
+        <div class="eyebrow">Личный проект · iOS · 2024–2026</div>
+        <div class="accent-rule"></div>
+        <h1>PIXERA</h1>
+        <div class="sub">живая пиксель-арт камера для iPhone</div>
+        <p class="body-text">Камера, которая превращает любой кадр в ретро-графику в реальном времени: пикселизация, дизеринг и палитра — на GPU, без задержки и без фильтра поверх готового снимка.</p>
+        <button class="next-hint" onclick="goTo(1)" aria-label="Следующий слайд">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="cover-meta">
+          ramazanzhov@gmail.com<br>
+          Swift · SwiftUI · SpriteKit · Metal · AVFoundation · ARKit · CoreML
+        </div>
+      </div>
+      <figure class="frame">
+        <img src="media/cover.png" alt="Экран приложения PIXERA во время съёмки" loading="eager">
+      </figure>
+    </div>
+  </section>
+
+  <!-- 1 · О ПРОЕКТЕ -->
+  <section class="slide">
+    <div class="slide-inner split">
+      <div>
+        <div class="eyebrow">О проекте</div>
+        <h2 style="font-size:clamp(1.7rem,4vw,2.4rem); margin-bottom:20px;">Что это</h2>
+        <p class="body-text">PIXERA — приложение для iPhone, которое превращает камеру в живой пиксель-арт видоискатель. Всё, что попадает в кадр — обычная улица, экран ноутбука, закат за окном — выходит на дисплей уже как ретро-графика: крупные пиксели, ограниченная палитра, обработка на лету, без задержки.</p>
+        <p class="body-text">Я делал его не как фильтр поверх готового кадра, а как полноценный рендер-пайплайн на GPU: даунсемплинг, дизеринг по матрице Байера, подбор ближайшего цвета из палитры, апскейл обратно в полный кадр — и всё это тридцать раз в секунду на телефоне, включая необязательный «мультяшный» контурный проход поверх пикселизации.</p>
+        <p class="body-text">Кроме съёмки фото и видео, в приложении есть создание собственных палитр из готового набора цветов, локальная история последних роликов и звуковой bitcrush-эффект для видео.</p>
+        <div class="aside-note">
+          <span class="aside-note__tag">B2B</span>
+          <p>Мне это интереснее не как будущий хит App Store, а как техническая витрина — повод для разговора с командами, которым нужен живой GPU-рендеринг видео или мобильный захват сенсорных данных.</p>
+        </div>
+      </div>
+      <figure class="frame">
+        <img src="media/palette.png" alt="Экран выбора палитры и цвета" loading="lazy">
+        <figcaption style="padding:0 14px 14px;">выбор палитры и цвета</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 2 · КАК УСТРОЕНО -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Устройство</div>
+      <h2 style="font-size:clamp(1.7rem,4vw,2.4rem); margin-bottom:20px;">Как это устроено</h2>
+      <p class="body-text">В основе — Metal. Кадр с камеры (или с ARKit-сессии на моделях с LiDAR) уменьшается до нескольких десятков пикселей по длинной стороне, дизерится по классической 4×4 матрице Байера и раскладывается по ограниченной палитре — от четырёх до шестнадцати цветов. Затем картинка возвращается к полному разрешению уже «пиксельной», без сглаживания на границах.</p>
+      <p class="body-text">Для отдельного мультяшного режима добавляются ещё два прохода — имитация adaptive threshold и bilateral filter из OpenCV, только переписанные под шейдеры Metal, чтобы укладываться в бюджет одного кадра на телефоне.</p>
+      <p class="body-text">Отдельно на кадры смотрит модель YOLOv11 — она включена не для украшения интерфейса, а как триггер вспомогательного пайплайна фонового захвата (следующий раздел).</p>
+      <div class="stack-line"><b>Стек:</b> Swift, SwiftUI, SpriteKit (холст интерфейса), Metal (рендер), AVFoundation и ARKit (захват), CoreML и Vision (детекция объектов). Около 8000 строк кода, 69 файлов.</div>
+      <div class="aside-note">
+        <span class="aside-note__tag">B2B</span>
+        <p>GPU-пайплайн сам по себе — рабочий пример для тех, кто делает камерные эффекты; связка YOLO и LiDAR — для тех, кто собирает сенсорные данные для компьютерного зрения и робототехники. Это и есть аудитория, на которую я рассчитываю, а не масс-маркет.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · СЪЁМКА (визуальный слайд) -->
+  <section class="slide">
+    <div class="slide-inner center-figure">
+      <div class="eyebrow">Съёмка</div>
+      <figure class="frame">
+        <img src="media/recording.png" alt="Интерфейс приложения во время записи видео" loading="lazy">
+      </figure>
+      <figcaption>интерфейс во время записи видео — таймер, палитра, live-превью</figcaption>
+    </div>
+  </section>
+
+  <!-- 4 · ВИДЕО 1 -->
+  <section class="slide">
+    <div class="slide-inner center-figure">
+      <div class="eyebrow">Демонстрация · 1 / 2</div>
+      <div class="frame" style="max-width:280px;">
+        <video src="media/demo-1.mp4" poster="media/poster-1.png" controls muted autoplay loop playsinline preload="metadata"></video>
+      </div>
+      <figcaption>живая пикселизация экрана ноутбука, снято на телефон — без ускорения и склейки</figcaption>
+    </div>
+  </section>
+
+  <!-- 5 · ВИДЕО 2 -->
+  <section class="slide">
+    <div class="slide-inner center-figure">
+      <div class="eyebrow">Демонстрация · 2 / 2</div>
+      <div class="frame" style="max-width:280px;">
+        <video src="media/demo-2.mp4" poster="media/poster-2.png" controls muted autoplay loop playsinline preload="metadata"></video>
+      </div>
+      <figcaption>закат и клавиатура — палитра подстраивается под тёплые тона кадра</figcaption>
+    </div>
+  </section>
+
+  <!-- 6 · СБОР ДАННЫХ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Сбор данных</div>
+      <h2 style="font-size:clamp(1.7rem,4vw,2.4rem); margin-bottom:20px;">Фоновый механизм</h2>
+      <p class="body-text">Кроме основной функции — камеры — в приложении есть фоновый механизм сбора данных. Работает он так: когда модель YOLO уверенно распознаёт объект в кадре, приложение вырезает из постоянно пишущегося кольцевого буфера видео-клип — пять секунд до и пять секунд после события — и одновременно начинает писать показания LiDAR (на поддерживаемых моделях) и данные акселерометра с гироскопом, примерно одиннадцать секунд начиная с момента детекции.</p>
+      <p class="body-text">Это не бесконтрольный сбор всего подряд. Активность ограничена профилем устройства: старые модели iPhone получают одно событие за сессию раз в тридцать секунд, более новые — до десяти событий за пятнадцать минут, после чего механизм уходит в шестидесятисекундный «отдых». Пользователь может полностью отключить сбор одним переключателем в настройках — тогда ни один кадр никуда не отправляется.</p>
+      <div class="aside-note">
+        <span class="aside-note__tag">B2B</span>
+        <p>Единственный сценарий, в котором я вижу смысл включать это в продакшн, — конкретный заказчик: команда компьютерного зрения или робототехники, которой нужны короткие, размеченные, привязанные к движению телефона клипы, а таких данных с настоящего LiDAR немного. Копить их «на всякий случай» без такого разговора на другом конце я считаю бессмысленным — и сознательно этого не делаю.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · АРХИТЕКТУРА ЗАХВАТА -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Архитектура</div>
+      <h2 style="font-size:clamp(1.7rem,4vw,2.4rem); margin-bottom:20px;">Кто владеет какими данными</h2>
+      <figure class="diagram-figure">
+        <svg class="diagram" viewBox="0 0 1000 300" role="img" aria-label="ARSession отдаёт capturedImage трём потребителям и sceneDepth — LiDARCollector; AVCaptureSession отдаёт звук в запись пользователя; CMMotionManager — в MetadataCollector. Зелёным выделены пути, которые попадают в фоновый экспорт при детекции; серым — пути, которые в экспорт не входят.">
+          <!-- source boxes -->
+          <rect class="node" x="20" y="20" width="620" height="46" rx="6"></rect>
+          <text class="node-title" x="330" y="41" text-anchor="middle" font-size="12">ARSession</text>
+          <text class="node-sub" x="330" y="57" text-anchor="middle" font-size="9.5">единственный владелец камеры</text>
+
+          <rect class="node" x="660" y="20" width="140" height="46" rx="6"></rect>
+          <text class="node-title" x="730" y="41" text-anchor="middle" font-size="9.5">AVCaptureSession</text>
+          <text class="node-sub" x="730" y="57" text-anchor="middle" font-size="8.5">только микрофон</text>
+
+          <rect class="node" x="820" y="20" width="140" height="46" rx="6"></rect>
+          <text class="node-title" x="890" y="41" text-anchor="middle" font-size="9.5">CMMotionManager</text>
+          <text class="node-sub" x="890" y="57" text-anchor="middle" font-size="8.5">10 Hz</text>
+
+          <!-- trunks from ARSession -->
+          <line class="edge" x1="250" y1="66" x2="250" y2="120"></line>
+          <text class="edge-label" x="256" y="86" font-size="8.5">frame.capturedImage</text>
+          <text class="edge-label" x="256" y="97" font-size="8.5">YCbCr 1080p · 60 Hz</text>
+          <line class="edge" x1="90" y1="120" x2="410" y2="120"></line>
+          <line class="edge" x1="90" y1="120" x2="90" y2="170"></line>
+          <line class="edge" x1="250" y1="120" x2="250" y2="170"></line>
+          <line class="edge" x1="410" y1="120" x2="410" y2="170"></line>
+          <text class="edge-label" x="410" y="148" text-anchor="middle" font-size="8">processVideoBuffer()</text>
+
+          <line class="edge" x1="570" y1="66" x2="570" y2="170"></line>
+          <text class="edge-label" x="576" y="86" font-size="8.5">frame.sceneDepth.depthMap</text>
+          <text class="edge-label" x="576" y="97" font-size="8.5">Float32 · 256×192</text>
+
+          <line class="edge" x1="730" y1="66" x2="730" y2="170"></line>
+          <line class="edge" x1="890" y1="66" x2="890" y2="170"></line>
+
+          <polygon class="arrowhead" points="86,170 94,170 90,177"></polygon>
+          <polygon class="arrowhead" points="246,170 254,170 250,177"></polygon>
+          <polygon class="arrowhead" points="406,170 414,170 410,177"></polygon>
+          <polygon class="arrowhead" points="566,170 574,170 570,177"></polygon>
+          <polygon class="arrowhead" points="726,170 734,170 730,177"></polygon>
+          <polygon class="arrowhead" points="886,170 894,170 890,177"></polygon>
+
+          <!-- consumer boxes -->
+          <rect class="node" x="20" y="170" width="140" height="52" rx="6"></rect>
+          <text class="node-title" x="90" y="192" text-anchor="middle" font-size="9">MinuteBufferManager</text>
+          <text class="node-sub" x="90" y="208" text-anchor="middle" font-size="8">кольцевой буфер 4×60с</text>
+
+          <rect class="node node-accent" x="180" y="170" width="140" height="52" rx="6"></rect>
+          <text class="node-title-accent" x="250" y="192" text-anchor="middle" font-size="9.5">VideoAnalyzer</text>
+          <text class="node-sub" x="250" y="208" text-anchor="middle" font-size="8.5">ML · каждые 2с</text>
+
+          <rect class="node" x="340" y="170" width="140" height="52" rx="6"></rect>
+          <text class="node-title" x="410" y="192" text-anchor="middle" font-size="10">Экран</text>
+          <text class="node-sub" x="410" y="208" text-anchor="middle" font-size="8.5">рендер + эффекты</text>
+
+          <rect class="node" x="500" y="170" width="140" height="52" rx="6"></rect>
+          <text class="node-title" x="570" y="192" text-anchor="middle" font-size="9.5">LiDARCollector</text>
+          <text class="node-sub" x="570" y="208" text-anchor="middle" font-size="8.5">10 Hz, глубина</text>
+
+          <rect class="node" x="660" y="170" width="140" height="52" rx="6"></rect>
+          <text class="node-title" x="730" y="192" text-anchor="middle" font-size="9.5">AudioManager</text>
+          <text class="node-sub" x="730" y="208" text-anchor="middle" font-size="8.5">только звук</text>
+
+          <rect class="node" x="820" y="170" width="140" height="52" rx="6"></rect>
+          <text class="node-title" x="890" y="192" text-anchor="middle" font-size="9">MetadataCollector</text>
+          <text class="node-sub" x="890" y="208" text-anchor="middle" font-size="8.5">10 Hz, IMU</text>
+
+          <!-- outcomes -->
+          <line class="edge edge-accent" x1="90" y1="222" x2="90" y2="256"></line>
+          <text class="edge-label-accent" x="90" y="236" text-anchor="middle" font-size="8">extractClip()</text>
+          <polygon class="arrowhead-accent" points="86,256 94,256 90,263"></polygon>
+          <text class="node-title-accent" x="90" y="277" text-anchor="middle" font-size="9.5">clip.mp4</text>
+
+          <line class="edge edge-accent" x1="250" y1="222" x2="250" y2="256"></line>
+          <text class="edge-label-accent" x="250" y="236" text-anchor="middle" font-size="8">onSignificantDetection</text>
+          <polygon class="arrowhead-accent" points="246,256 254,256 250,263"></polygon>
+          <text class="node-title-accent" x="250" y="277" text-anchor="middle" font-size="8.5">→ пайплайн (дальше)</text>
+
+          <line class="edge edge-muted" x1="410" y1="222" x2="410" y2="256"></line>
+          <polygon class="arrowhead-muted" points="406,256 414,256 410,263"></polygon>
+          <text class="node-sub" x="410" y="270" text-anchor="middle" font-size="8.5">не сохраняется</text>
+
+          <line class="edge edge-accent" x1="570" y1="222" x2="570" y2="256"></line>
+          <text class="edge-label-accent" x="570" y="236" text-anchor="middle" font-size="8">stopAndCollect()</text>
+          <polygon class="arrowhead-accent" points="566,256 574,256 570,263"></polygon>
+          <text class="node-title-accent" x="570" y="277" text-anchor="middle" font-size="9">lidar.bin / .json</text>
+
+          <line class="edge edge-muted" x1="730" y1="222" x2="730" y2="256"></line>
+          <polygon class="arrowhead-muted" points="726,256 734,256 730,263"></polygon>
+          <text class="node-sub" x="730" y="270" text-anchor="middle" font-size="8.5">запись пользователя</text>
+
+          <line class="edge edge-accent" x1="890" y1="222" x2="890" y2="256"></line>
+          <text class="edge-label-accent" x="890" y="236" text-anchor="middle" font-size="8">stopAndCollect()</text>
+          <polygon class="arrowhead-accent" points="886,256 894,256 890,263"></polygon>
+          <text class="node-title-accent" x="890" y="277" text-anchor="middle" font-size="8.5">motion_timeline[]</text>
+        </svg>
+        <figcaption>Три независимые системы пишут данные на телефоне непрерывно. Зелёным — то, что попадает в фоновый экспорт при детекции объекта; серым (пунктир) — live-превью и звук пользовательской записи, которые в экспорт не входят.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 8 · ПАЙПЛАЙН ПРИ ДЕТЕКЦИИ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">При детекции</div>
+      <h2 style="font-size:clamp(1.7rem,4vw,2.4rem); margin-bottom:20px;">Что происходит в момент срабатывания</h2>
+      <figure class="diagram-figure">
+        <svg class="diagram" viewBox="0 0 900 550" role="img" aria-label="После детекции объекта параллельно стартуют запись метаданных, LiDAR и вырезание клипа из кольцевого буфера; после их готовности EventExporter собирает четыре файла и грузит их на S3 по пути uuid, метка события, время; после успешной загрузки DataCollectionManager засчитывает событие и уходит в паузу.">
+          <rect class="node node-accent" x="260" y="16" width="380" height="48" rx="6"></rect>
+          <text class="node-title-accent" x="450" y="38" text-anchor="middle" font-size="12">VideoAnalyzer</text>
+          <text class="node-sub" x="450" y="54" text-anchor="middle" font-size="9">объект обнаружен, confidence ≥ порога</text>
+
+          <line class="edge edge-accent" x1="450" y1="64" x2="450" y2="100"></line>
+          <text class="edge-label-accent" x="456" y="84" font-size="8.5">запускает сбор</text>
+
+          <line class="edge" x1="150" y1="100" x2="750" y2="100"></line>
+          <line class="edge" x1="150" y1="100" x2="150" y2="130"></line>
+          <line class="edge" x1="450" y1="100" x2="450" y2="130"></line>
+          <line class="edge" x1="750" y1="100" x2="750" y2="130"></line>
+          <polygon class="arrowhead" points="146,130 154,130 150,137"></polygon>
+          <polygon class="arrowhead" points="446,130 454,130 450,137"></polygon>
+          <polygon class="arrowhead" points="746,130 754,130 750,137"></polygon>
+
+          <rect class="node" x="30" y="130" width="240" height="70" rx="6"></rect>
+          <text class="node-title" x="150" y="150" text-anchor="middle" font-size="10">MetadataCollector</text>
+          <text class="node-sub" x="150" y="166" text-anchor="middle" font-size="8">startRecording() → stopAndCollect()</text>
+          <text class="node-sub" x="150" y="182" text-anchor="middle" font-size="8">IMU · 10 Hz, до готовности клипа</text>
+
+          <rect class="node" x="330" y="130" width="240" height="70" rx="6"></rect>
+          <text class="node-title" x="450" y="150" text-anchor="middle" font-size="10">LiDARCollector</text>
+          <text class="node-sub" x="450" y="166" text-anchor="middle" font-size="8">startRecording() → stopAndCollect()</text>
+          <text class="node-sub" x="450" y="182" text-anchor="middle" font-size="8">глубина · 10 Hz</text>
+
+          <rect class="node" x="630" y="130" width="240" height="70" rx="6"></rect>
+          <text class="node-title" x="750" y="150" text-anchor="middle" font-size="9.5">MinuteBufferManager</text>
+          <text class="node-sub" x="750" y="166" text-anchor="middle" font-size="8.5">extractClip(5с + 5с)</text>
+          <text class="node-sub" x="750" y="182" text-anchor="middle" font-size="8">ждём lookahead</text>
+
+          <line class="edge" x1="150" y1="200" x2="150" y2="230"></line>
+          <line class="edge" x1="450" y1="200" x2="450" y2="230"></line>
+          <line class="edge" x1="750" y1="200" x2="750" y2="230"></line>
+          <line class="edge" x1="150" y1="230" x2="750" y2="230"></line>
+          <text class="edge-label" x="450" y="221" text-anchor="middle" font-size="8">+ VideoAnalyzer.flushDetectionLog()</text>
+
+          <line class="edge" x1="450" y1="230" x2="450" y2="270"></line>
+          <text class="edge-label" x="456" y="253" font-size="8.5">клип + глубина + IMU + лог готовы</text>
+          <polygon class="arrowhead" points="446,270 454,270 450,277"></polygon>
+
+          <rect class="node node-accent" x="260" y="270" width="380" height="50" rx="6"></rect>
+          <text class="node-title-accent" x="450" y="293" text-anchor="middle" font-size="11">EventExporter.export()</text>
+          <text class="node-sub" x="450" y="309" text-anchor="middle" font-size="8.5">собирает четыре файла в один экспорт</text>
+
+          <line class="edge" x1="450" y1="320" x2="450" y2="350"></line>
+          <text class="edge-label" x="456" y="339" font-size="8.5">PUT</text>
+          <polygon class="arrowhead" points="446,350 454,350 450,357"></polygon>
+
+          <rect class="node" x="40" y="350" width="820" height="90" rx="6"></rect>
+          <text class="node-title" x="450" y="373" text-anchor="middle" font-size="10">/{uuid}/{label}_{timestamp}/</text>
+          <rect class="chip" x="50" y="388" width="190" height="28" rx="4"></rect>
+          <text class="chip-text" x="145" y="406" text-anchor="middle" font-size="9">clip.mp4</text>
+          <rect class="chip" x="250" y="388" width="190" height="28" rx="4"></rect>
+          <text class="chip-text" x="345" y="406" text-anchor="middle" font-size="9">metadata.json</text>
+          <rect class="chip" x="450" y="388" width="190" height="28" rx="4"></rect>
+          <text class="chip-text" x="545" y="406" text-anchor="middle" font-size="9">detections.json</text>
+          <rect class="chip" x="650" y="388" width="190" height="28" rx="4"></rect>
+          <text class="chip-text" x="745" y="406" text-anchor="middle" font-size="9">lidar.bin</text>
+
+          <line class="edge" x1="450" y1="440" x2="450" y2="468"></line>
+          <text class="edge-label" x="456" y="458" font-size="8.5">успешно</text>
+          <polygon class="arrowhead" points="446,468 454,468 450,475"></polygon>
+
+          <rect class="node" x="260" y="468" width="380" height="44" rx="6"></rect>
+          <text class="node-title" x="450" y="495" text-anchor="middle" font-size="10">DataCollectionManager.reportEventSent()</text>
+
+          <text class="node-sub" x="450" y="530" text-anchor="middle" font-size="8.5">счётчик события → пауза по профилю устройства → новая сессия</text>
+        </svg>
+        <figcaption>От срабатывания YOLO до четырёх файлов на S3 — один синхронный проход: три источника стартуют параллельно, ждут друг друга и упаковываются в один экспорт.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 9 · ФОРМАТ ФАЙЛОВ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Формат экспорта</div>
+      <h2 style="font-size:clamp(1.7rem,4vw,2.4rem); margin-bottom:20px;">Что внутри каждого файла</h2>
+      <div class="spec-grid">
+        <div class="spec-card">
+          <div class="spec-card__name">clip.mp4</div>
+          <div class="spec-card__desc">Видео вокруг момента детекции, вырезанное из кольцевого буфера.</div>
+          <div class="spec-card__fields">10 секунд · 1280×720 · H.264</div>
+        </div>
+        <div class="spec-card">
+          <div class="spec-card__name">metadata.json</div>
+          <div class="spec-card__desc">Контекст события: что распознано и как вело себя устройство.</div>
+          <div class="spec-card__fields">
+            ai_label, ai_confidence<br>
+            camera <span>(front/back)</span><br>
+            time_of_day_hour<br>
+            timestamp_start, timestamp_end<br>
+            app_version<br>
+            motion_timeline[] <span>pitch/roll/yaw + accel + gyro</span><br>
+            motion_was_stable<br>
+            max_tilt_pitch, max_tilt_roll<br>
+            lidar_frames_count, lidar_supported
+          </div>
+        </div>
+        <div class="spec-card">
+          <div class="spec-card__name">detections.json</div>
+          <div class="spec-card__desc">Лог всех ML-детекций за время события.</div>
+          <div class="spec-card__fields">label, confidence, timestamp <span>— по одной записи на детекцию</span></div>
+        </div>
+        <div class="spec-card">
+          <div class="spec-card__name">lidar.bin</div>
+          <div class="spec-card__desc">Сырые кадры глубины, бинарный формат вместо JSON — чтобы не раздувать файл base64.</div>
+          <div class="spec-card__fields">
+            [LIDR][count]<br>
+            × N кадров:<br>
+            [t][width][height][bytesPerRow]<br>
+            [pixelFormat][byteCount][Float32-кадр]
+          </div>
+          <div class="spec-note">256×192×4 байта = 192 КБ/кадр · ~110 кадров ≈ 21 МБ</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 · КОНТАКТ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Контакт</div>
+      <h2 style="font-size:clamp(1.7rem,4vw,2.4rem); margin-bottom:8px;">PIXERA</h2>
+      <p class="body-text" style="margin-bottom:28px;">Личный проект. Swift, Metal, CoreML, ARKit, SwiftUI. Около 8000 строк кода, 69 файлов.</p>
+
+      <div class="contact-block">
+        <div class="contact-label">Видео на этой странице</div>
+        <p class="body-text" style="max-width:56ch;">Оба ролика — реальные записи с телефона, без ускорения и склейки монтажа.</p>
+      </div>
+
+      <div class="contact-block">
+        <div class="contact-label">Контакт</div>
+        <div class="copyrow">
+          <span class="email" id="email">ramazanzhov@gmail.com</span>
+          <button class="copybtn" id="copybtn" onclick="copyEmail()">Копировать</button>
+        </div>
+      </div>
+
+      <div class="aside-note">
+        <span class="aside-note__tag">B2B</span>
+        <p>Если у вас есть задача, для которой это может пригодиться — GPU-рендеринг видео, мобильный сбор сенсорных данных, компьютерное зрение — буду рад обсудить.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var deck = document.getElementById('deck');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var dotnav = document.getElementById('dotnav');
+  var counter = document.getElementById('counter');
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  slides.forEach(function(_, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Слайд ' + (i+1));
+    b.addEventListener('click', function(){ goTo(i); });
+    dotnav.appendChild(b);
+  });
+  var dots = Array.prototype.slice.call(dotnav.children);
+
+  window.goTo = function(i){
+    if (i < 0 || i >= slides.length) return;
+    slides[i].scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  };
+
+  function setActive(i){
+    dots.forEach(function(d, idx){
+      if (idx === i) d.setAttribute('aria-current', 'true');
+      else d.removeAttribute('aria-current');
+    });
+    var total = slides.length;
+    counter.textContent = String(i+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+  }
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.5){
+        setActive(slides.indexOf(entry.target));
+      }
+    });
+  }, { root: deck, threshold: [0.5] });
+  slides.forEach(function(s){ io.observe(s); });
+
+  setActive(0);
+
+  deck.addEventListener('keydown', function(e){
+    var current = dots.findIndex(function(d){ return d.getAttribute('aria-current') === 'true'; });
+    if (e.key === 'ArrowDown' || e.key === 'PageDown'){ e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowUp' || e.key === 'PageUp'){ e.preventDefault(); goTo(current - 1); }
+  });
+  deck.tabIndex = 0;
+
+  window.copyEmail = function(){
+    var email = document.getElementById('email').textContent.trim();
+    var btn = document.getElementById('copybtn');
+    function flash(){
+      var prev = btn.textContent;
+      btn.textContent = 'Скопировано';
+      setTimeout(function(){ btn.textContent = prev; }, 1500);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(email).then(flash).catch(function(){
+        selectText(document.getElementById('email'));
+      });
+    } else {
+      selectText(document.getElementById('email'));
+    }
+  };
+
+  function selectText(node){
+    var range = document.createRange();
+    range.selectNodeContents(node);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+})();
+</script>
